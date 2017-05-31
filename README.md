@@ -1,2 +1,2 @@
 # FileStorage
-FileStorage is an abstraction for file system.
+FileStorage is an simple abstraction for file system. 

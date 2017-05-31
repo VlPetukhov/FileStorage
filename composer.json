@@ -1,0 +1,8 @@
+{
+  "name": "vlpetukhov/filestorage",
+  "autoload": {
+    "psr-0": {
+      "VlPetukhov\\FileStorage": "src"
+    }
+  }
+}
