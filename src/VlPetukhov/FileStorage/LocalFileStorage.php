@@ -11,6 +11,8 @@
 namespace VlPetukhov\FileStorage;
 
 
+use Exception;
+
 class LocalFileStorage implements FileStorageInterface
 {
     /**
@@ -23,10 +25,15 @@ class LocalFileStorage implements FileStorageInterface
     protected $baseUrl = null;
 
     /**
+     * @var int
+     */
+    protected $defaultDirMode = 0777;
+
+    /**
      * @param string|null $rootPath
      * @param string|null $baseUrl
      */
-    public function __consruct($rootPath = null, $baseUrl = null)
+    public function __construct($rootPath = null, $baseUrl = null)
     {
         if (is_string($rootPath)) {
             $this->rootPath = $rootPath;
@@ -43,7 +50,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function getFileUrl(string $path)
     {
-        return '';
+        return $this->baseUrl ? $this->baseUrl . '/' . ltrim($path, ' /') : null;
     }
 
     /**
@@ -81,13 +88,70 @@ class LocalFileStorage implements FileStorageInterface
     }
 
     /**
+     * @param int $mode
+     */
+    public function setDefaultDirMode(integer $mode)
+    {
+        $this->defaultDirMode = $mode;
+    }
+
+    /**
+     * @return int
+     */
+    public function getDefaultDirMode()
+    {
+        return $this->defaultDirMode;
+    }
+
+    /**
+     * @param string $path
+     * @return string
+     * @throws \Exception
+     */
+    protected function normalizePath(string $path):string
+    {
+        if (!preg_match("^[\/\w]+$", $path)) {
+            throw new \Exception("Incorrect path was given! Path: '{$path}'");
+        }
+
+        return $this->rootPath . DIRECTORY_SEPARATOR . ltrim($path, '/');
+    }
+
+    /**
+     * @param string $filePath
+     * @return bool
+     */
+    protected function ensureFileDirectoryExists(string $filePath)
+    {
+        $dirPath = dirname($filePath);
+
+        if (file_exists(dirname($dirPath))) {
+            return true;
+        }
+
+        return mkdir($dirPath, $this->defaultDirMode, true);
+    }
+
+    /**
      * @param string $source
      * @param string $destination
      * @return bool
      */
     public function copy(string $source, string $destination): boolean
     {
-        // TODO: Implement copy() method.
+        $sourcePath = $this->normalizePath($source);
+
+        if (!file_exists($sourcePath)) {
+            return false;
+        }
+
+        $destPath = $this->normalizePath($destination);
+
+        if ($this->ensureFileDirectoryExists($destPath)) {
+            return copy($sourcePath, $destPath);
+        }
+
+        return false;
     }
 
     /**
@@ -97,7 +161,19 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function move(string $source, string $destination): boolean
     {
-        // TODO: Implement move() method.
+        $sourcePath = $this->normalizePath($source);
+
+        if (!file_exists($sourcePath)) {
+            return false;
+        }
+
+        $destPath = $this->normalizePath($destination);
+
+        if ($this->ensureFileDirectoryExists($destPath)) {
+            return rename($sourcePath, $destPath);
+        }
+
+        return false;
     }
 
     /**
@@ -107,7 +183,17 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function copyFile(string $filePath, string $destination): boolean
     {
-        // TODO: Implement copyFile() method.
+        if (!file_exists($filePath)) {
+            return false;
+        }
+
+        $destPath = $this->normalizePath($destination);
+
+        if ($this->ensureFileDirectoryExists($destPath)) {
+            return copy($filePath, $destPath);
+        }
+
+        return false;
     }
 
     /**
@@ -117,7 +203,17 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function moveFile(string $filePath, string $destination): boolean
     {
-        // TODO: Implement moveFile() method.
+        if (!file_exists($filePath)) {
+            return false;
+        }
+
+        $destPath = $this->normalizePath($destination);
+
+        if ($this->ensureFileDirectoryExists($destPath)) {
+            return rename($filePath, $destPath);
+        }
+
+        return false;
     }
 
     /**
@@ -127,7 +223,17 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function moveUploadedFile(string $filePath, string $destination): boolean
     {
-        // TODO: Implement moveUploadedFile() method.
+        if (!file_exists($filePath)) {
+            return false;
+        }
+
+        $destPath = $this->normalizePath($destination);
+
+        if ($this->ensureFileDirectoryExists($destPath)) {
+            return move_uploaded_file($filePath, $destPath);
+        }
+
+        return false;
     }
 
     /**
@@ -138,7 +244,13 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function putFileContents(string $path, string $content, integer $flags = 0)
     {
-        // TODO: Implement putFileContents() method.
+        $filePath = $this->normalizePath($path);
+
+        if ($this->ensureFileDirectoryExists($filePath)) {
+            return file_put_contents($filePath, $content, $flags);
+        }
+
+        return false;
     }
 
     /**
@@ -149,16 +261,103 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function getFileContents(string $path, integer $offset = 0, integer $maxlen = 0)
     {
-        // TODO: Implement getFileContents() method.
+        $filePath = $this->normalizePath($path);
+
+        if (file_exists($filePath)) {
+            return file_get_contents($filePath, false, NULL, $offset, $maxlen);
+        }
+
+        return false;
+    }
+
+    /**
+     * @param string $dirPath
+     * @return bool
+     * @throws Exception
+     */
+    protected function isDirEmpty(string $dirPath): boolean
+    {
+        $dirHandle = opendir($dirPath);
+
+        if (!$dirHandle) {
+            throw new Exception("No directory exists or it inaccessible!");
+        }
+
+        while (false !== ($file = readdir($dirHandle))) {
+            if ($file != "." && $file != "..") {
+                closedir($dirHandle);
+
+                return false;
+            }
+        }
+
+        closedir($dirHandle);
+
+        return true;
+    }
+
+    /**
+     * @param string $dirPath
+     * @return bool
+     */
+    protected function deleteRecursively(string $dirPath):boolean
+    {
+        $dirHandle = opendir($dirPath);
+
+        if (!$dirHandle) {
+            return false;
+        }
+
+        while (false !== ($entry = readdir($dirHandle))) {
+            if ($entry == "." || $entry == "..") {
+                continue;
+            }
+
+            $fullPath = $dirPath . DIRECTORY_SEPARATOR . $entry;
+
+            if ( is_dir($fullPath) ) {
+                $this->deleteRecursively($fullPath);
+            }
+            else {
+                unlink($fullPath);
+            }
+        }
+
+        closedir($dirHandle);
+
+        return rmdir($dirPath);
     }
 
     /**
      * @param string $path
+     * @param bool $recursive
      * @return bool
      */
-    public function delete(string $path): boolean
+    public function delete(string $path, boolean $recursive = false): boolean
     {
-        // TODO: Implement delete() method.
+        $destPath = $this->normalizePath($path);
+
+        if (!file_exists($destPath)) {
+            return true;
+        }
+
+        if (is_dir($destPath)) {
+            try {
+                if (!$recursive && $this->isDirEmpty($destPath)) {
+                    return false;
+                }
+            } catch (Exception $exception) {
+                return false;
+            }
+
+            if ($recursive) {
+                return $this->deleteRecursively($destPath);
+            }
+
+            return rmdir($destPath);
+        }
+
+        return unlink($destPath);
     }
 
     /**
@@ -167,16 +366,23 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function mkdir(string $path): boolean
     {
-        // TODO: Implement mkdir() method.
+        $dirPath = $this->normalizePath($path);
+
+        if (file_exists($dirPath && is_dir($dirPath))) {
+            return false;
+        }
+
+        return mkdir($dirPath, $this->defaultDirMode, true);
     }
 
     /**
      * @param string $path
+     * @param bool $recursive
      * @return bool
      */
-    public function rmdir(string $path): boolean
+    public function rmdir(string $path, boolean $recursive = false): boolean
     {
-        // TODO: Implement rmdir() method.
+        return $this->delete($path, $recursive);
     }
 
     /**
@@ -186,7 +392,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function rename(string $oldName, string $newName): boolean
     {
-        // TODO: Implement rename() method.
+        return $this->move($oldName, $newName);
     }
 
     /**
@@ -195,7 +401,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function fileExists(string $path): boolean
     {
-        // TODO: Implement fileExists() method.
+        return file_exists($this->normalizePath($path));
     }
 
     /**
@@ -204,7 +410,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function isFile(string $path): boolean
     {
-        // TODO: Implement isFile() method.
+        return is_file($this->normalizePath($path));
     }
 
     /**
@@ -213,7 +419,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function isDir(string $path): boolean
     {
-        // TODO: Implement isDir() method.
+        return is_dir($this->normalizePath($path));
     }
 
     /**
@@ -222,7 +428,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function isReadable(string $path): boolean
     {
-        // TODO: Implement isReadable() method.
+        return is_readable($this->normalizePath($path));
     }
 
     /**
@@ -231,7 +437,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function isWritable(string $path): boolean
     {
-        // TODO: Implement isWritable() method.
+        return is_writable($this->normalizePath($path));
     }
 
     /**
@@ -240,7 +446,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function fileSize(string $path)
     {
-        // TODO: Implement fileSize() method.
+        return filesize($this->normalizePath($path));
     }
 
     /**
@@ -249,7 +455,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function fileAccessTime(string $path)
     {
-        // TODO: Implement fileAccessTime() method.
+        return fileatime($this->normalizePath($path));
     }
 
     /**
@@ -258,7 +464,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function fileCeationTime(string $path)
     {
-        // TODO: Implement fileCeationTime() method.
+        return filectime($this->normalizePath($path));
     }
 
     /**
@@ -267,6 +473,39 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function fileModificationTime(string $path)
     {
-        // TODO: Implement fileModificationTime() method.
+        return filemtime($this->normalizePath($path));
+    }
+
+    /**
+     * @param string $name
+     * @return mixed
+     * @throws Exception
+     */
+    public function __get($name)
+    {
+        $methodName = 'get' . ucfirst($name);
+
+        if (method_exists($this, $methodName)) {
+            return $this->$methodName;
+        }
+
+        throw new Exception("Parameter '{$name}' or its getter not found in " . static::class);
+    }
+
+    /**
+     * @param $name
+     * @param $value
+     * @return mixed
+     * @throws Exception
+     */
+    public function __set($name, $value)
+    {
+        $methodName = 'set' . ucfirst($name);
+
+        if (method_exists($this, $methodName)) {
+            return $this->$methodName($value);
+        }
+
+        throw new Exception("Parameter '{$name}' or its setter not found in " . static::class);
     }
 }

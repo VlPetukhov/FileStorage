@@ -94,9 +94,10 @@ interface FileStorageInterface
 
     /**
      * @param string $path
+     * @param bool $recursive
      * @return bool
      */
-    public function delete(string $path):boolean;
+    public function delete(string $path, boolean $recursive = false):boolean;
 
     /**
      * @param string $path
@@ -106,13 +107,14 @@ interface FileStorageInterface
 
     /**
      * @param string $path
+     * @param bool $recursive
      * @return bool
      */
-    public function rmdir(string $path):boolean;
+    public function rmdir(string $path, boolean $recursive = false):boolean;
 
     /**
      * @param string $oldName
-     * @param string $newName
+     * @param string $newNames
      * @return bool
      */
     public function rename(string $oldName, string $newName):boolean;
