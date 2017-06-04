@@ -1,5 +1,9 @@
 {
   "name": "vlpetukhov/filestorage",
+  "version":"0.1.0",
+    "require":{
+        "php":">=7.0"
+  },
   "autoload": {
     "psr-0": {
       "VlPetukhov\\FileStorage": "src"
