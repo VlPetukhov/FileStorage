@@ -1,5 +1,5 @@
 {
-  "name": "EStore/FileStorage",
+  "name": "ESlovo/FileStorage",
 	"description": "A simple filestorage for eSlovo project",
 	"keywords": [
 	    "filestorage", "file system abstraction"
@@ -12,7 +12,7 @@
   },
   "autoload": {
     "psr-4": {
-      "EStore\\FileStorage\\": "src"
+      "ESlovo\\FileStorage\\": "src"
     }
   }
 }
