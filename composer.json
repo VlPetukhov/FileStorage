@@ -1,11 +1,17 @@
 {
   "name": "vlpetukhov/filestorage",
+	"description": "A simple filestorage for eSlovo project",
+	"keywords": [
+	    "filestorage", "file system abstraction"
+	],
+	"homepage": "https://github.com/VlPetukhov/FileStorage",
+	"license": "MIT",
   "version":"0.1.0",
     "require":{
         "php":">=7.0"
   },
   "autoload": {
-    "psr-0": {
+    "psr-4": {
       "VlPetukhov\\FileStorage": "src"
     }
   }
