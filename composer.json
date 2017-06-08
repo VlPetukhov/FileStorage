@@ -1,5 +1,5 @@
 {
-  "name": "vlpetukhov/filestorage",
+  "name": "VlPetukhov/FileStorage",
 	"description": "A simple filestorage for eSlovo project",
 	"keywords": [
 	    "filestorage", "file system abstraction"
