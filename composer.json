@@ -14,10 +14,5 @@
     "psr-4": {
       "ESlovo\\FileStorage\\": "src"
     }
-  },
-  "extra": {
-	"branch-alias": {
-		"dev-master": "0.1.0-dev"
-	}
   }
 }
