@@ -137,7 +137,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function copy(string $source, string $destination): boolean
+    public function copy(string $source, string $destination): bool
     {
         $sourcePath = $this->normalizePath($source);
 
@@ -159,7 +159,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function move(string $source, string $destination): boolean
+    public function move(string $source, string $destination): bool
     {
         $sourcePath = $this->normalizePath($source);
 
@@ -201,7 +201,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function moveFile(string $filePath, string $destination): boolean
+    public function moveFile(string $filePath, string $destination): bool
     {
         if (!file_exists($filePath)) {
             return false;
@@ -221,7 +221,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function moveUploadedFile(string $filePath, string $destination): boolean
+    public function moveUploadedFile(string $filePath, string $destination): bool
     {
         if (!file_exists($filePath)) {
             return false;
@@ -275,7 +275,7 @@ class LocalFileStorage implements FileStorageInterface
      * @return bool
      * @throws Exception
      */
-    protected function isDirEmpty(string $dirPath): boolean
+    protected function isDirEmpty(string $dirPath): bool
     {
         $dirHandle = opendir($dirPath);
 
@@ -300,7 +300,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $dirPath
      * @return bool
      */
-    protected function deleteRecursively(string $dirPath):boolean
+    protected function deleteRecursively(string $dirPath):bool
     {
         $dirHandle = opendir($dirPath);
 
@@ -364,7 +364,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function mkdir(string $path): boolean
+    public function mkdir(string $path): bool
     {
         $dirPath = $this->normalizePath($path);
 
@@ -390,7 +390,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $newName
      * @return bool
      */
-    public function rename(string $oldName, string $newName): boolean
+    public function rename(string $oldName, string $newName): bool
     {
         return $this->move($oldName, $newName);
     }
@@ -399,7 +399,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function fileExists(string $path): boolean
+    public function fileExists(string $path): bool
     {
         return file_exists($this->normalizePath($path));
     }
@@ -408,7 +408,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function isFile(string $path): boolean
+    public function isFile(string $path): bool
     {
         return is_file($this->normalizePath($path));
     }
@@ -417,7 +417,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function isDir(string $path): boolean
+    public function isDir(string $path): bool
     {
         return is_dir($this->normalizePath($path));
     }
@@ -426,7 +426,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function isReadable(string $path): boolean
+    public function isReadable(string $path): bool
     {
         return is_readable($this->normalizePath($path));
     }
@@ -435,7 +435,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function isWritable(string $path): boolean
+    public function isWritable(string $path): bool
     {
         return is_writable($this->normalizePath($path));
     }

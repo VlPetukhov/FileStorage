@@ -46,14 +46,14 @@ interface FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function copy(string $source, string $destination):boolean;
+    public function copy(string $source, string $destination):bool;
 
     /**
      * @param string $source
      * @param string $destination
      * @return bool
      */
-    public function move(string $source, string $destination):boolean;
+    public function move(string $source, string $destination):bool;
 
     /**
      * @param string $filePath
@@ -67,14 +67,14 @@ interface FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function moveFile(string $filePath, string $destination):boolean;
+    public function moveFile(string $filePath, string $destination):bool;
 
     /**
      * @param string $filePath
      * @param string $destination
      * @return bool
      */
-    public function moveUploadedFile(string $filePath, string $destination):boolean;
+    public function moveUploadedFile(string $filePath, string $destination):bool;
 
     /**
      * @param string $path
@@ -103,7 +103,7 @@ interface FileStorageInterface
      * @param string $path
      * @return bool
      */
-    public function mkdir(string $path):boolean;
+    public function mkdir(string $path):bool;
 
     /**
      * @param string $path
@@ -117,37 +117,37 @@ interface FileStorageInterface
      * @param string $newNames
      * @return bool
      */
-    public function rename(string $oldName, string $newName):boolean;
+    public function rename(string $oldName, string $newName):bool;
 
     /**
      * @param string $path
      * @return bool
      */
-    public function fileExists(string $path):boolean;
+    public function fileExists(string $path):bool;
 
     /**
      * @param string $path
      * @return bool
      */
-    public function isFile(string $path):boolean;
+    public function isFile(string $path):bool;
 
     /**
      * @param string $path
      * @return bool
      */
-    public function isDir(string $path):boolean;
+    public function isDir(string $path):bool;
 
     /**
      * @param string $path
      * @return bool
      */
-    public function isReadable(string $path):boolean;
+    public function isReadable(string $path):bool;
 
     /**
      * @param string $path
      * @return bool
      */
-    public function isWritable(string $path):boolean;
+    public function isWritable(string $path):bool;
 
     /**
      * @param string $path
