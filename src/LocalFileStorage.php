@@ -110,7 +110,7 @@ class LocalFileStorage implements FileStorageInterface
      */
     protected function normalizePath(string $path):string
     {
-        if (!preg_match("^[\/\w]+$", $path)) {
+        if (!preg_match("#^[\/\w]+$#", $path)) {
             throw new \Exception("Incorrect path was given! Path: '{$path}'");
         }
 

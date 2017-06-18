@@ -15,6 +15,43 @@ use PHPUnit\Framework\TestCase;
 
 class FileStorageTest extends TestCase
 {
+    /** @var string  */
+    protected $storageRootPath = __DIR__ .DIRECTORY_SEPARATOR . 'test';
+
+    public function setUp()
+    {
+        if (file_exists($this->storageRootPath)) {
+            $this->recursiveDirRemove($this->storageRootPath);
+        }
+    }
+
+    /**
+     * Deletes directory recursively
+     * @param $src
+     */
+    protected function recursiveDirRemove($src) {
+        $dir = opendir($src);
+        while(false !== ($file = readdir($dir))) {
+
+            if (($file != '.') && ($file != '..')) {
+                $full = $src . DIRECTORY_SEPARATOR . $file;
+
+                if (is_dir($full)) {
+                    $this->recursiveDirRemove($full);
+                }
+                else {
+                    unlink($full);
+                }
+            }
+        }
+
+        closedir($dir);
+        rmdir($src);
+    }
+
+    /**
+     * @test
+     */
     public function testFileStorageConstructor()
     {
         //setting parameters after storage creation
@@ -44,5 +81,50 @@ class FileStorageTest extends TestCase
         $newMode = 0600;
         $fileStorage->setDefaultDirMode($newMode);
         $this->assertEquals($newMode, $fileStorage->getDefaultDirMode());
+    }
+
+    /**
+     * @test
+     */
+    public function testDirectoryCreation()
+    {
+        $storageOuterUrl = "test.com/files";
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $storageOuterUrl);
+        //file storage creates directories
+        $dirPath = 'dir';
+        $fileStorage->mkdir($dirPath);
+        $this->assertDirectoryExists($this->storageRootPath . DIRECTORY_SEPARATOR . $dirPath);
+        //file storage creates directory recursively
+        $dirPath2 = 'dir/sub_dir1/sub_dir2';
+        $fileStorage->mkdir($dirPath2);
+        $path = str_replace('/', DIRECTORY_SEPARATOR, $dirPath2);
+        $this->assertDirectoryExists($this->storageRootPath . DIRECTORY_SEPARATOR . $path);
+    }
+
+    /**
+     * Data provider
+     * @return array
+     */
+    public function incorrectDirNames()
+    {
+        return [
+            ['~'],
+            ['dir!'],
+            ['..'],
+            ['/../'],
+            ['/dir/../../../'],
+        ];
+    }
+
+    /**
+     * @dataProvider incorrectDirNames
+     * @expectedException \Exception
+     */
+    public function testIncorrectDirectoriesCreation($dirPath)
+    {
+        $storageOuterUrl = "test.com/files";
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $storageOuterUrl);
+        //file storage creates directories
+        $fileStorage->mkdir($dirPath);
     }
 }
