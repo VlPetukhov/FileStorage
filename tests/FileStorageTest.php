@@ -17,6 +17,7 @@ class FileStorageTest extends TestCase
 {
     public function testFileStorageConstructor()
     {
+        //setting parameters after storage creation
         $fileStorage = new LocalFileStorage();
         $this->assertInstanceOf(LocalFileStorage::class, $fileStorage);
         $this->assertTrue(is_null($fileStorage->getRootPath()));
@@ -25,10 +26,23 @@ class FileStorageTest extends TestCase
         $baseDir = "/testDir";
         $baseUrl = "test.com";
 
+        $fileStorage->setRootPath($baseDir);
+        $fileStorage->setBaseUrl($baseUrl);
+        $this->assertEquals($baseDir, $fileStorage->getRootPath());
+        $this->assertEquals($baseUrl, $fileStorage->getBaseUrl());
+
+        unset($ileStorage);
+        //setting via constructor parameters
         $fileStorage = new LocalFileStorage($baseDir, $baseUrl);
 
         $this->assertInstanceOf(LocalFileStorage::class, $fileStorage);
         $this->assertEquals($baseDir, $fileStorage->getRootPath());
         $this->assertEquals($baseUrl, $fileStorage->getBaseUrl());
+
+        //dir mode setter and getter
+        $this->assertEquals(0777, $fileStorage->getDefaultDirMode());
+        $newMode = 0600;
+        $fileStorage->setDefaultDirMode($newMode);
+        $this->assertEquals($newMode, $fileStorage->getDefaultDirMode());
     }
 }
