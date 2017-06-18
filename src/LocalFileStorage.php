@@ -65,7 +65,7 @@ class LocalFileStorage implements FileStorageInterface
     /**
      * @return string
      */
-    public function getBaseUrl(): string
+    public function getBaseUrl()
     {
         return $this->baseUrl;
     }
@@ -82,7 +82,7 @@ class LocalFileStorage implements FileStorageInterface
     /**
      * @return string
      */
-    public function getRootPath(): string
+    public function getRootPath()
     {
         return $this->rootPath;
     }
@@ -90,7 +90,7 @@ class LocalFileStorage implements FileStorageInterface
     /**
      * @param int $mode
      */
-    public function setDefaultDirMode(integer $mode)
+    public function setDefaultDirMode(int $mode)
     {
         $this->defaultDirMode = $mode;
     }
@@ -242,7 +242,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param int $flags
      * @return int|false
      */
-    public function putFileContents(string $path, string $content, integer $flags = 0)
+    public function putFileContents(string $path, string $content, int $flags = 0)
     {
         $filePath = $this->normalizePath($path);
 
@@ -259,7 +259,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param int $maxlen
      * @return false|string
      */
-    public function getFileContents(string $path, integer $offset = 0, integer $maxlen = 0)
+    public function getFileContents(string $path, int $offset = 0, int $maxlen = 0)
     {
         $filePath = $this->normalizePath($path);
 
@@ -333,7 +333,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param bool $recursive
      * @return bool
      */
-    public function delete(string $path, boolean $recursive = false): boolean
+    public function delete(string $path, bool $recursive = false): bool
     {
         $destPath = $this->normalizePath($path);
 
@@ -380,7 +380,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param bool $recursive
      * @return bool
      */
-    public function rmdir(string $path, boolean $recursive = false): boolean
+    public function rmdir(string $path, bool $recursive = false): bool
     {
         return $this->delete($path, $recursive);
     }

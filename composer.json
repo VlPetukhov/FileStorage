@@ -11,14 +11,22 @@
   "require": {
     "php": ">=7.0"
   },
+  "require-dev": {
+    "phpunit/phpunit": "^6.0"
+  },
   "extra": {
     "branch-alias": {
-      "dev-master": "1.0"
+      "dev-master": "1.0.1"
     }
   },
   "autoload": {
     "psr-4": {
       "ESlovo\\FileStorage\\": "src"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "ESlovo\\FileStorage\\": "tests"
     }
   }
 }
