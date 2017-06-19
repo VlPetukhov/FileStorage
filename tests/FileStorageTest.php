@@ -108,8 +108,13 @@ class FileStorageTest extends TestCase
     public function incorrectDirNames()
     {
         return [
+            ['.'],
             ['~'],
-            ['dir!'],
+            ['$dir'],
+            ['~dir'],
+            ['!dir'],
+            ['@dir'],
+            ['#dir'], //and so on with the path which contains non alphabetical symbols
             ['..'],
             ['/../'],
             ['/dir/../../../'],
@@ -126,5 +131,25 @@ class FileStorageTest extends TestCase
         $fileStorage = new LocalFileStorage($this->storageRootPath, $storageOuterUrl);
         //file storage creates directories
         $fileStorage->mkdir($dirPath);
+    }
+
+    public function testPuFileContents()
+    {
+        $storageOuterUrl = "test.com/files";
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $storageOuterUrl);
+
+        $fileContent = "This is plain text.";
+        $fileDirectoryPath = "/test/subdir/";
+        $filePath = $fileDirectoryPath . 'file.txt';
+        $fileInStoragePath = $this->storageRootPath . DIRECTORY_SEPARATOR .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $fileStorage->putFileContents($filePath, $fileContent);
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals($fileContent, file_get_contents($fileInStoragePath));
+
+        $fileStorage->putFileContents($filePath, $fileContent, FILE_APPEND);
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals($fileContent . $fileContent, file_get_contents($fileInStoragePath));
     }
 }
