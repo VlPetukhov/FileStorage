@@ -132,6 +132,9 @@ class FileStorageTest extends TestCase
         $fileStorage->mkdir($dirPath);
     }
 
+    /**
+     * @test
+     */
     public function testPuFileContents()
     {
         $storageOuterUrl = "test.com/files";
@@ -166,6 +169,9 @@ class FileStorageTest extends TestCase
         $this->assertEquals($fileContent, file_get_contents($fileInStoragePath));
     }
 
+    /**
+     * @test
+     */
     public function testCopyFile()
     {
         $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
@@ -188,6 +194,9 @@ class FileStorageTest extends TestCase
         $this->assertFileNotExists($file2InStoragePath);
     }
 
+    /**
+     * @test
+     */
     public function testMoveFile()
     {
         $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
