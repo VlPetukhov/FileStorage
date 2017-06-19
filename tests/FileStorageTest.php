@@ -17,6 +17,7 @@ class FileStorageTest extends TestCase
 {
     /** @var string  */
     protected $storageRootPath = __DIR__ .DIRECTORY_SEPARATOR . 'test';
+    protected $storageOuterUrl = "http://test.com/";
 
     public function setUp()
     {
@@ -88,8 +89,7 @@ class FileStorageTest extends TestCase
      */
     public function testDirectoryCreation()
     {
-        $storageOuterUrl = "test.com/files";
-        $fileStorage = new LocalFileStorage($this->storageRootPath, $storageOuterUrl);
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
         //file storage creates directories
         $dirPath = 'dir';
         $fileStorage->mkdir($dirPath);
@@ -127,8 +127,7 @@ class FileStorageTest extends TestCase
      */
     public function testIncorrectDirectoriesCreation($dirPath)
     {
-        $storageOuterUrl = "test.com/files";
-        $fileStorage = new LocalFileStorage($this->storageRootPath, $storageOuterUrl);
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
         //file storage creates directories
         $fileStorage->mkdir($dirPath);
     }
@@ -151,5 +150,56 @@ class FileStorageTest extends TestCase
         $fileStorage->putFileContents($filePath, $fileContent, FILE_APPEND);
         $this->assertFileExists($fileInStoragePath);
         $this->assertEquals($fileContent . $fileContent, file_get_contents($fileInStoragePath));
+
+        //binary data
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'binary.file';
+        $fileContent = file_get_contents($sourceFilePath);
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $fileInStoragePath = $this->storageRootPath . DIRECTORY_SEPARATOR .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $fileStorage->putFileContents($filePath, $fileContent);
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals($fileContent, file_get_contents($fileInStoragePath));
+    }
+
+    public function testCopyFile()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $fileInStoragePath = $this->storageRootPath . DIRECTORY_SEPARATOR .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $fileStorage->copyFile($sourceFilePath, $filePath);
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+    }
+
+    public function testMoveFile()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+        $copiedFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'forCopies' .
+            DIRECTORY_SEPARATOR . 'text.file';
+
+        copy($sourceFilePath, $copiedFilePath);
+
+        $fileDirectoryPath = "/test3/subdir3/";
+        $filePath = $fileDirectoryPath . 'file3.txt';
+        $fileInStoragePath = $this->storageRootPath . DIRECTORY_SEPARATOR .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $fileStorage->moveFile($copiedFilePath, $filePath);
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertFileNotExists($copiedFilePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
     }
 }

@@ -60,7 +60,7 @@ interface FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function copyFile(string $filePath, string $destination):boolean;
+    public function copyFile(string $filePath, string $destination):bool;
 
     /**
      * @param string $filePath

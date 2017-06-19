@@ -181,7 +181,7 @@ class LocalFileStorage implements FileStorageInterface
      * @param string $destination
      * @return bool
      */
-    public function copyFile(string $filePath, string $destination): boolean
+    public function copyFile(string $filePath, string $destination): bool
     {
         if (!file_exists($filePath)) {
             return false;
