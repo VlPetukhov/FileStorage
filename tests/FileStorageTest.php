@@ -8,10 +8,11 @@
  * @license http://opensource.org/licenses/gpl-license.php GNU Public License
  */
 
-namespace  ESlovo\FileStorage;
+namespace  ESlovo\FileStorage\tests;
 
 
 use PHPUnit\Framework\TestCase;
+use ESlovo\FileStorage\LocalFileStorage;
 
 class FileStorageTest extends TestCase
 {
@@ -298,7 +299,46 @@ class FileStorageTest extends TestCase
         $destInStoragePath2 = $this->storageRootPath .
             ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath2), '/');
 
-        $this->assertFalse($fileStorage->copy('wrong/path.txt', $destPath2));
+        $this->assertFalse($fileStorage->move('wrong/path.txt', $destPath2));
+        $this->assertFileNotExists($destInStoragePath2);
+    }
+
+
+    /**
+     * @test
+     */
+    public function testRename()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $fileInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $this->assertTrue($fileStorage->copyFile($sourceFilePath, $filePath));
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+
+        $destPath = "/dest/subdir1/subdir2/dest.txt";
+        $destInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath), '/');
+
+        $this->assertTrue($fileStorage->rename($filePath, $destPath));
+
+        $this->assertFileExists($destInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($destInStoragePath));
+
+        $this->assertFileNotExists($fileInStoragePath);
+
+        //wrong source path
+        $destPath2 = "/dest/subdir1/subdir2/dest2.txt";
+        $destInStoragePath2 = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath2), '/');
+
+        $this->assertFalse($fileStorage->rename('wrong/path.txt', $destPath2));
         $this->assertFileNotExists($destInStoragePath2);
     }
 
@@ -339,5 +379,65 @@ class FileStorageTest extends TestCase
         //...but with the flag it could be done
         $this->assertTrue($fileStorage->delete($fileDirectoryPath, true));
         $this->assertFileNotExists($dirInStoragePath);
+    }
+
+    /**
+     * @test
+     */
+    public function testRmDir()
+    {
+        $fileStorage = new LocalFilestorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $dirInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $fileDirectoryPath), '/');
+
+        $fileInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $this->assertTrue($fileStorage->copyFile($sourceFilePath, $filePath));
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+
+        //it is not allowed delete not empty directories
+        $this->assertFalse($fileStorage->rmDir($fileDirectoryPath));
+        $this->assertFileExists($dirInStoragePath);
+
+        //...but with the flag it could be done
+        $this->assertTrue($fileStorage->rmDir($fileDirectoryPath, true));
+        $this->assertFileNotExists($dirInStoragePath);
+    }
+
+    /**
+     * @test
+     */
+    public function testFileExists()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $fileContent = "This is plain text.";
+        $fileDirectoryPath = "/test/subdir/";
+        $filePath = $fileDirectoryPath . 'file.txt';
+        $fileInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $fileStorage->putFileContents($filePath, $fileContent);
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals($fileContent, file_get_contents($fileInStoragePath));
+
+        $this->assertTrue($fileStorage->fileExists($filePath));
+        $this->assertTrue($fileStorage->isFile($filePath));
+        $this->assertFalse($fileStorage->isDir($filePath));
+        $this->assertEquals(filesize($fileInStoragePath), $fileStorage->fileSize($filePath));
+
+        $this->assertFalse($fileStorage->isFile($fileDirectoryPath));
+        $this->assertTrue($fileStorage->isDir($fileDirectoryPath));
+
+        $this->assertFalse($fileStorage->fileExists('wrong/path.txt'));
+        $this->assertFalse($fileStorage->isFile('wrong/path.txt'));
+        $this->assertFalse($fileStorage->isDir('wrong/path.txt'));
     }
 }
