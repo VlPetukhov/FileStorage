@@ -223,4 +223,82 @@ class FileStorageTest extends TestCase
         $this->assertFalse($fileStorage->moveFile($sourceFilePath . 'wrong_path', $filePath2));
         $this->assertFileNotExists($file2InStoragePath);
     }
+
+    /**
+     * @test
+     */
+    public function testCopy()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $fileInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $this->assertTrue($fileStorage->copyFile($sourceFilePath, $filePath));
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+
+        $destPath = "/dest/subdir1/subdir2/dest.txt";
+        $destInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath), '/');
+
+        $this->assertTrue($fileStorage->copy($filePath, $destPath));
+
+        $this->assertFileExists($destInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($destInStoragePath));
+
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+
+        //wrong source path
+        $destPath2 = "/dest/subdir1/subdir2/dest2.txt";
+        $destInStoragePath2 = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath2), '/');
+
+        $this->assertFalse($fileStorage->copy('wrong/path.txt', $destPath2));
+        $this->assertFileNotExists($destInStoragePath2);
+    }
+
+
+    /**
+     * @test
+     */
+    public function testMove()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $fileInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $this->assertTrue($fileStorage->copyFile($sourceFilePath, $filePath));
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+
+        $destPath = "/dest/subdir1/subdir2/dest.txt";
+        $destInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath), '/');
+
+        $this->assertTrue($fileStorage->move($filePath, $destPath));
+
+        $this->assertFileExists($destInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($destInStoragePath));
+
+        $this->assertFileNotExists($fileInStoragePath);
+
+        //wrong source path
+        $destPath2 = "/dest/subdir1/subdir2/dest2.txt";
+        $destInStoragePath2 = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $destPath2), '/');
+
+        $this->assertFalse($fileStorage->copy('wrong/path.txt', $destPath2));
+        $this->assertFileNotExists($destInStoragePath2);
+    }
 }
