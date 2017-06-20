@@ -440,4 +440,26 @@ class FileStorageTest extends TestCase
         $this->assertFalse($fileStorage->isFile('wrong/path.txt'));
         $this->assertFalse($fileStorage->isDir('wrong/path.txt'));
     }
+
+    /**
+     * @test
+     */
+    public function testGetUrl()
+    {
+        $fileStorage = new LocalFileStorage($this->storageRootPath);
+        $fileContent = "This is plain text.";
+        $fileDirectoryPath = "/test/subdir/";
+        $filePath = $fileDirectoryPath . 'file.txt';
+
+        $fileStorage->putFileContents($filePath, $fileContent);
+
+        $this->assertEquals('', $fileStorage->getFileUrl($filePath));
+
+        $fileStorage->setBaseUrl($this->storageOuterUrl);
+
+        $fileUrl = $this->storageOuterUrl . $filePath;
+        $this->assertEquals($fileUrl, $fileStorage->getFileUrl($filePath));
+
+        $this->assertEquals('', $fileStorage->getFileUrl('/wrong/path.txt'));
+    }
 }

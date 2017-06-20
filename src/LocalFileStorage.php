@@ -50,7 +50,11 @@ class LocalFileStorage implements FileStorageInterface
      */
     public function getFileUrl(string $path)
     {
-        return $this->baseUrl ? $this->baseUrl . '/' . ltrim($path, ' /') : null;
+        if ($this->fileExists($path)) {
+            return $this->baseUrl ? $this->baseUrl . '/' . ltrim($path, ' /') : null;
+        }
+
+        return '';
     }
 
     /**
