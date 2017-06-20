@@ -343,15 +343,16 @@ class LocalFileStorage implements FileStorageInterface
 
         if (is_dir($destPath)) {
             try {
-                if (!$recursive && $this->isDirEmpty($destPath)) {
+                $empty = $this->isDirEmpty($destPath);
+                if (!$recursive && !$empty) {
                     return false;
+                }
+
+                if ($recursive && !$empty) {
+                    return $this->deleteRecursively($destPath);
                 }
             } catch (Exception $exception) {
                 return false;
-            }
-
-            if ($recursive) {
-                return $this->deleteRecursively($destPath);
             }
 
             return rmdir($destPath);

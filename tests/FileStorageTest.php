@@ -301,4 +301,43 @@ class FileStorageTest extends TestCase
         $this->assertFalse($fileStorage->copy('wrong/path.txt', $destPath2));
         $this->assertFileNotExists($destInStoragePath2);
     }
+
+    /**
+     * @test
+     */
+    public function testDelete()
+    {
+        $fileStorage = new LocalFilestorage($this->storageRootPath, $this->storageOuterUrl);
+
+        $sourceFilePath = __DIR__ . DIRECTORY_SEPARATOR . 'externalFiles' . DIRECTORY_SEPARATOR . 'text.file';
+
+        $fileDirectoryPath = "/test1/subdir1/";
+        $filePath = $fileDirectoryPath . 'file1.txt';
+        $dirInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $fileDirectoryPath), '/');
+
+        $fileInStoragePath = $this->storageRootPath .
+            ltrim(str_replace('/', DIRECTORY_SEPARATOR, $filePath), '/');
+
+        $this->assertTrue($fileStorage->copyFile($sourceFilePath, $filePath));
+        $this->assertFileExists($fileInStoragePath);
+        $this->assertEquals(file_get_contents($sourceFilePath), file_get_contents($fileInStoragePath));
+
+        $this->assertTrue($fileStorage->delete($filePath));
+        $this->assertFileNotExists($fileInStoragePath);
+        //file not exists so nothing to delete
+        $this->assertTrue($fileStorage->delete($filePath));
+
+        //delete non empty directory
+        $this->assertTrue($fileStorage->copyFile($sourceFilePath, $filePath));
+        $this->assertFileExists($fileInStoragePath);
+
+        //it is not allowed delete not empty directories
+        $this->assertFalse($fileStorage->delete($fileDirectoryPath));
+        $this->assertFileExists($dirInStoragePath);
+
+        //...but with the flag it could be done
+        $this->assertTrue($fileStorage->delete($fileDirectoryPath, true));
+        $this->assertFileNotExists($dirInStoragePath);
+    }
 }
